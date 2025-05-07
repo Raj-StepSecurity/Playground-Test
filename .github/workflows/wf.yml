@@ -19,18 +19,15 @@ jobs:
         id: setup-zig
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: step-security/dynamic-uses@v1
+        uses: step-security/setup-zig@fix_Revert-Workflow-Changes
         with:
-          uses: step-security/setup-zig@${{ github.event.inputs.action-tag }}
-          with: >
-            {
-              "version": "latest",
-              "use-cache": "true"
-            }
+            version: latest
+            use-cache: true
+
       - name: Build and Test Zig Project
         run: |
           echo "Zig setup action completed."
           echo "Version: latest"
-          echo "Action Tag Used: ${{ github.event.inputs.action-tag }}"
+          echo "Action Tag Used: fix_Revert-Workflow-Changes"
           zig build
           zig build test
