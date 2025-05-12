@@ -1,26 +1,31 @@
-name: Test GitHubToken Excessive Permissions
-on:
-  push:
-    branches:
-      - main
+name: mongodb github action
+
+on: 
+    workflow_dispatch:
+      inputs:
+        action-tag:
+          description: 'Tag for the action'
+          required: true
+          default: 'main'
+
 jobs:
-  test-permissions:
+  mongodb-action:
+    name: Start MongoDB Server v${{ matrix.mongodb-version }}
+
     runs-on: ubuntu-latest
-    # Overly broad permissions for GITHUB_TOKEN
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-      actions: write
-      checks: write
-      deployments: write
-      statuses: write
-      packages: write
-      repository-projects: write
-      discussions: write
-      security-events: write  # This one, in particular, should raise a flag as it's typically not needed for most workflows
+    strategy:
+      matrix:
+        mongodb-version: ['4.0', '4.2', '4.4', '5.0', '6.0']
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Dummy Step
-        run: echo "This is to test excessive token permissions"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Start MongoDB Server
+        uses: step-security/dynamic-uses@v1
+        with:
+          uses: step-security/mongodb-github-action@${{ github.event.inputs.action-tag }}
+          with: >
+            {
+                "mongodb-version": ${{ matrix.mongodb-version }}
+            }
