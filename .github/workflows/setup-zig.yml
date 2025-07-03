@@ -1,4 +1,4 @@
-ame: "setup-zig"
+name: "setup-zig"
 
 on:
   workflow_dispatch:
