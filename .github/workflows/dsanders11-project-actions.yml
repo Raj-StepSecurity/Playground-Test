@@ -1,0 +1,155 @@
+name: dsanders11-project-actions
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  SOURCE_PROJECT_NUMBER: "6"
+
+jobs:
+  integration:
+    name: All sub-actions chained (@release)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Create test issue
+        id: setup-issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          url=$(gh issue create -R "${{ github.repository }}" \
+            --title "[project-actions test ${{ github.run_id }}]" \
+            --body "Auto-created by workflow run ${{ github.run_id }}")
+          echo "Created: $url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: github-script
+        uses: step-security/dsanders11-project-actions/github-script@release
+        with:
+          script: core.info('hello from project-actions/github-script')
+
+      - name: get-project
+        id: get-project
+        uses: step-security/dsanders11-project-actions/get-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ env.SOURCE_PROJECT_NUMBER }}
+
+      - name: find-project
+        uses: step-security/dsanders11-project-actions/find-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          title: ${{ steps.get-project.outputs.title }}
+
+      - name: find-workflow
+        id: find-workflow
+        uses: step-security/dsanders11-project-actions/find-workflow@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ env.SOURCE_PROJECT_NUMBER }}
+          name: Item added to project
+
+      - name: get-workflow
+        uses: step-security/dsanders11-project-actions/get-workflow@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ env.SOURCE_PROJECT_NUMBER }}
+          number: ${{ steps.find-workflow.outputs.number }}
+
+      - name: copy-project
+        id: copy
+        uses: step-security/dsanders11-project-actions/copy-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ env.SOURCE_PROJECT_NUMBER }}
+          title: test-copy-${{ github.run_id }}
+
+      - name: edit-project
+        uses: step-security/dsanders11-project-actions/edit-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          description: edited by workflow run ${{ github.run_id }}
+
+      - name: link-project
+        uses: step-security/dsanders11-project-actions/link-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          repository: ${{ github.repository }}
+
+      - name: add-item
+        id: add-item
+        uses: step-security/dsanders11-project-actions/add-item@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          content-url: ${{ steps.setup-issue.outputs.url }}
+
+      - name: get-item
+        uses: step-security/dsanders11-project-actions/get-item@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          item: ${{ steps.add-item.outputs.id }}
+
+      - name: edit-item
+        uses: step-security/dsanders11-project-actions/edit-item@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          item: ${{ steps.add-item.outputs.id }}
+          field: Status
+          field-value: Done
+
+      - name: completed-by
+        uses: step-security/dsanders11-project-actions/completed-by@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          field-value: Done
+
+      - name: archive-item
+        uses: step-security/dsanders11-project-actions/archive-item@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          item: ${{ steps.add-item.outputs.id }}
+
+      - name: delete-item
+        uses: step-security/dsanders11-project-actions/delete-item@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          item: ${{ steps.add-item.outputs.id }}
+
+      - name: close-project
+        uses: step-security/dsanders11-project-actions/close-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+          closed: "true"
+
+      - name: delete-project (cleanup copy)
+        if: always() && steps.copy.outputs.number != ''
+        uses: step-security/dsanders11-project-actions/delete-project@release
+        with:
+          token: ${{ secrets.PROJECT_PAT }}
+          project-number: ${{ steps.copy.outputs.number }}
+
+      - name: Close test issue
+        if: always() && steps.setup-issue.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue close "${{ steps.setup-issue.outputs.url }}" --reason completed
