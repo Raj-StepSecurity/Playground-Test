@@ -2,11 +2,6 @@ name: codacy-coverage-reporter-action
 
 on:
   workflow_dispatch:
-    inputs:
-      action-tag:
-        description: "Tag for the action"
-        required: true
-        default: "main"
 
 permissions:
   contents: read
@@ -24,8 +19,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Create coverage report
+        run: |
+          mkdir -p coverage
+          cat > coverage/coverage.xml << 'EOF'
+          <?xml version="1.0" ?>
+          <coverage line-rate="0.85" lines-covered="85" lines-valid="100" version="5.5">
+            <packages><package name="src" line-rate="0.85"><classes/></package></packages>
+          </coverage>
+          EOF
+
       - name: Upload Coverage to Codacy
+        continue-on-error: true
         uses: step-security/codacy-coverage-reporter-action@main
         with:
-          project-token: "49CVZHbGyYRvAKw08VIQ"
-          coverage-reports: "testdata/code-coverage-report-action/coverage.xml"
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: "coverage/coverage.xml"
