@@ -25,14 +25,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Decode and Set Credentials
+      - name: Decode Credentials to File
         run: |
-          DECODED=$(echo "${{ secrets.APP_CREDS_BASE64 }}" | base64 -d)
-          echo "APP_CREDS=$DECODED" >> $GITHUB_ENV
+          echo "${{ secrets.APP_CREDS_BASE64 }}" | base64 -d > /tmp/app_creds.json
 
       - name: Get GitHub App Token
         id: auth
         continue-on-error: true
         uses: step-security/github-app-auth-action@release
         with:
-          creds: ${{ env.APP_CREDS }}
+          creds: $(cat /tmp/app_creds.json)
