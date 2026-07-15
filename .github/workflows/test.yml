@@ -25,22 +25,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Decode and Set App Credentials
+      - name: Decode App Credentials
+        id: decode
         run: |
           DECODED=$(echo "${{ secrets.APP_CREDS_BASE64 }}" | base64 -d)
-          APP_ID=$(echo "$DECODED" | grep -o '"app_id":"[^"]*"' | cut -d'"' -f4)
-          INSTALLATION_ID=$(echo "$DECODED" | grep -o '"installation_id":"[^"]*"' | cut -d'"' -f4)
-          PRIVATE_KEY=$(echo "$DECODED" | grep -o '"private_key":"[^"]*"' | sed 's/"private_key":"//' | sed 's/"$//')
-
-          echo "GITHUB_APP_ID=$APP_ID" >> $GITHUB_ENV
-          echo "GITHUB_APP_INSTALLATION_ID=$INSTALLATION_ID" >> $GITHUB_ENV
-          echo "GITHUB_APP_PRIVATE_KEY=$PRIVATE_KEY" >> $GITHUB_ENV
+          echo "creds<<EOF" >> $GITHUB_OUTPUT
+          echo "$DECODED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Get GitHub App Token
         id: auth
         continue-on-error: true
         uses: step-security/github-app-auth-action@release
-        env:
-          APP_ID: ${{ env.GITHUB_APP_ID }}
-          INSTALLATION_ID: ${{ env.GITHUB_APP_INSTALLATION_ID }}
-          PRIVATE_KEY: ${{ env.GITHUB_APP_PRIVATE_KEY }}
+        with:
+          creds: ${{ steps.decode.outputs.creds }}
