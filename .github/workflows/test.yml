@@ -30,4 +30,4 @@ jobs:
         continue-on-error: true
         uses: step-security/github-app-auth-action@main
         with:
-          creds: ${{ secrets.APP_CREDS }}
+          creds: ${{ secrets.APP_CREDS_BASE64 }}
