@@ -25,6 +25,7 @@ jobs:
         uses: step-security/github-app-auth-action@release
         with:
           creds: ${{ secrets.GH_APP_CREDS }}
+          export-git-user: false
 
       - name: Verify token
         env:
