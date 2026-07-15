@@ -30,8 +30,7 @@ jobs:
           EOF
 
       - name: Upload Coverage to Codacy
-        continue-on-error: true
         uses: step-security/codacy-coverage-reporter-action@main
         with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          project-token: "49CVZHbGyYRvAKw08VIQ"
           coverage-reports: "coverage/coverage.xml"
