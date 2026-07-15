@@ -22,7 +22,7 @@ jobs:
 
       - name: Get GitHub App Token
         id: auth
-        uses: step-security/github-app-auth-action@release
+        uses: step-security/github-app-auth-action@main
         with:
           creds: ${{ secrets.APP_CREDS_BASE64 }}
           export-git-user: false
