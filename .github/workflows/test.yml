@@ -1,0 +1,33 @@
+
+name: github-app-auth-action
+
+on:
+  workflow_dispatch:
+    inputs:
+      action-tag:
+        description: "Tag for the action"
+        required: true
+        default: "main"
+
+permissions:
+  contents: read
+
+jobs:
+  github-app-auth-action-main:
+    name: GitHub App Auth (main)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Get GitHub App Token
+        id: auth
+        continue-on-error: true
+        uses: step-security/github-app-auth-action@main
+        with:
+          creds: ${{ secrets.APP_CREDS }}
