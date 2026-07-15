@@ -42,9 +42,9 @@ jobs:
       - name: Upload Coverage to Codacy
         uses: step-security/codacy-coverage-reporter-action@main
         with:
-          project-token: "49CVZHbGyYRvAKw08VIQ"
           coverage-reports: "coverage/coverage.xml"
         env:
+          CODACY_API_TOKEN: "49CVZHbGyYRvAKw08VIQ"
           CODACY_ORGANIZATION_PROVIDER: gh
           CODACY_USERNAME: Raj-StepSecurity
           CODACY_PROJECT_NAME: Playground-Test
