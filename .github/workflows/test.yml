@@ -1,21 +1,16 @@
-
 name: github-app-auth-action
 
 on:
   workflow_dispatch:
-    inputs:
-      action-tag:
-        description: "Tag for the action"
-        required: true
-        default: "main"
 
 permissions:
   contents: read
 
 jobs:
   github-app-auth-action-main:
-    name: GitHub App Auth (main)
+    name: GitHub App Auth
     runs-on: ubuntu-latest
+
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@v2
@@ -27,7 +22,13 @@ jobs:
 
       - name: Get GitHub App Token
         id: auth
-        continue-on-error: true
         uses: step-security/github-app-auth-action@release
         with:
-          creds: '{"app_id":"1105962","installation_id":"59312272","private_key":"-----BEGIN RSA PRIVATE KEY-----\nMIIEowIBAAKCAQEA8Ab6TX6iTCe2Xfj652tgprpjcpDUKkAVMuXLRdt0nN/RHwLV\nzPxnCnLq7tPPMGNUVwpef74kuh8PDnMIV8lFOn6SlQpTsWtjyc1uxSd/q8FaJBS+\n7ajUevXY8fFB3M+/+UQLCd6rVlgEJXXX5Dh/qCy7TCWGqPIEs7HZacEJ6nAKVBP5\nEViKk+7GT1Yxw9K/Fm9mPCZpnourovh4UMNEoq9tl5ey4tH0pbzF9juZXoDRKz1x\nkV4Eq3aPcl+auiuTTicSnWpwVXtWNj4Yvv52WiGnxGAW7IZwe06tjkaYgxhdYvAb\nKOvofzqrZWkbrG8pVep9Ne7gRYHctBsIRzDyOQIDAQABAoIBAGCDbcIbWUcl8L54\njure0k44RCSc97LFccC1hbbhN1Kc7Il7qlxyYTxiWPUPVhAu4IrfMIBNBJeSRYuZ\n1ZD27U9H9cjYDi8Y71cFs7Sy3TNC2+wGK3+Ek2udz035pHIVVyvzoDynvF1Lpt8p\nM1YhIbONyQIlVLA6IIngyXssk8Af5arv+s++DKcZgc/ZwT9+aTof4kard3BAQ+JQ\nk8CJQ4o6suRDkJwOno0l5arPr/MJTeovx7Eb+9xLZoRRj4NdSWpS9AppONS0ncM+\nJSj+h2k2qIyMnZgF/sMjxzEIhJZWHDL2LV76r/WoZMKw8VOghA+OUmq2oW9tAmoq\n0El9pMECgYEA+pjrjqO+cKnVsk54TWIhCmSlKOrQEHsor6cwtJsoKzC5HwsqUlYc\nlBbrzOKI47k5EmTSMhxKwZ2agCRbz/1OF8QcLtii4UZIheS1J9DB1WIUUYt/sNOC\nqJYRCNzWt3Y3sUEBLBrpSECltoy9BCnXHpyMod7lvqJwU8bQOtJvaUcCgYEA9TO4\nSrjmw+jLbhB0B+Lc/LumNrnPmu2v4k/TrIn1NiqijklfVzouM620WIGxhFi3fjxq\nc9R54L1GMaiN74cdtUlqzvdSfEWgD1kw4kAdYfFjHousOteKyYQ5qDiq47QtHxDP\n/8qhBgzqz287hLxlwxF5gUF/dETj+YwEcd0SiH8CgYB8Ces2rFgcPgRXgL3NV9AQ\n6+ZQTYH1VnC6GSBjlRUZ48EN26H0JUl6B6ppvIuTZGAaeasNQLHECjWqTdTgK3pX\nCywECBj/NqG5HI6KiasX6rcx8cGfjeHzfmwqHd1t6+b/JrTk1uE3cUBVDm6Uu/0N\n2uFFUiYX6SF+Zj81jmm1CwKBgQDUYs4Yevv3aWb7mOjIA+siRm98K4n1Sjf0sOxK\nINzy5A8Va9xXM5/dR3JUz1Gxrx6RC0exuLMwxQFN9g+rD7/dzQ/k4TjjR3OSl9DN\nyHcq5OjUBmtSNGyUjCFc4miy/teuduOTTjIXiYzBzDkjigQi6Ln0CYWacil9d5hK\nABEThQKBgCIA0D7MjcKWZlk8o+1i0cIU5v5bCWopEs3bW/6d4v6xWqpuTGp3u5dj\n1SEDG8b3aLDCx/Q7I/3yW72VcV8e5E9416Ep6xXeImXTf4rCsTM4qH6qOokc4SgK\nznjO/4iDxm/QnY802wGyonC0Ke3cfsknLj7Y8m5MIzr2PaEyrj9C\n-----END RSA PRIVATE KEY-----"}'
+          creds: ${{ secrets.GH_APP_CREDS }}
+
+      - name: Verify token
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          gh api /installation/repositories \
+            --jq '.repositories[].full_name'
