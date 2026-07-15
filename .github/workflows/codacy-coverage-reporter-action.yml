@@ -45,3 +45,7 @@ jobs:
         with:
           project-token: "49CVZHbGyYRvAKw08VIQ"
           coverage-reports: "coverage/coverage.xml"
+        env:
+          CODACY_ORGANIZATION_PROVIDER: gh
+          CODACY_USERNAME: Raj-StepSecurity
+          CODACY_PROJECT_NAME: Playground-Test
